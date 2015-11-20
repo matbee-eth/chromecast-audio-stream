@@ -5,6 +5,4 @@ Stream your PC's audio to the Chromecast
 
 2) execute "npm install" from this projects directory.
 
-3) Install "virtual-audio-capturer"
-
-4) execute "node index.js"
+3) execute "node index.js"
