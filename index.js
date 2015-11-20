@@ -3,6 +3,7 @@ var app = express();
 var ffmpeg = require('fluent-ffmpeg');
 var path = require('path');
 app.get('/', function (req, res) {
+	req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
 	var command = ffmpeg();
 	command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
 	command.input('audio=virtual-audio-capturer')
