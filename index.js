@@ -52,7 +52,7 @@ function ondeviceup(host) {
       var media = {
 
         // Here you can plug an URL to any mp4, webm, mp3 or jpg file with the proper contentType.
-        contentId: 'http://'+getIp()+':3000/',
+        contentId: 'http://'+getIp()+':'+server.address().port+'/',
         contentType: 'audio/mp3',
         streamType: 'BUFFERED', // or LIVE
 
