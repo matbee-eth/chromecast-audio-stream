@@ -142,7 +142,7 @@ function detectVirtualAudioDevice (redetection) {
 			console.log("VIRTUAL DEVICE FOUND");
 			go();
 		} else if (redetection) {
-			console.log("Please re-run application and run as Administrator to install Virtual Audio Driver.");
+			console.log("Please re-run application and temporarily allow Administrator to install Virtual Audio Driver.");
 		} else {
 			wincmd.elevate("register_run_as_admin.bat", function () {
 				detectVirtualAudioDevice(true);
