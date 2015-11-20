@@ -39,24 +39,7 @@ var server = app.listen(3000, function () {
 var Client                = require('castv2-client').Client;
 var DefaultMediaReceiver  = require('castv2-client').DefaultMediaReceiver;
 var mdns                  = require('mdns-js');
-var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 
-browser.on('ready', function () {
-    browser.discover(); 
-});
-
-browser.on('update', function (service) {
-    console.log('data:', service);
-	  console.log('found device "%s" at %s:%d', service.name, service.addresses[0], service.port);
-	  ondeviceup(service.addresses[0]);
-	  browser.stop();
-});
-
-browser.on('serviceUp', function(service) {
-  console.log('found device "%s" at %s:%d', service.name, service.addresses[0], service.port);
-  ondeviceup(service.addresses[0]);
-  browser.stop();
-});
 
 function ondeviceup(host) {
 
@@ -123,3 +106,53 @@ function getIp () {
     }
     return ip;
 }
+
+function go() {
+	var browser = mdns.createBrowser(mdns.tcp('googlecast'));
+
+	browser.on('ready', function () {
+	    browser.discover(); 
+	});
+
+	browser.on('update', function (service) {
+	    console.log('data:', service);
+		  console.log('found device "%s" at %s:%d', service.name, service.addresses[0], service.port);
+		  ondeviceup(service.addresses[0]);
+		  browser.stop();
+	});
+}
+
+var wincmd = require('node-windows');
+function detectVirtualAudioDevice (redetection) {
+	var command = ffmpeg("dummy");
+	command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
+	command.inputOptions([
+		"-list_devices true",
+		"-f dshow",
+	])
+	command.outputOptions([
+	])
+	.on('start', function(commandLine) {
+	    console.log('Spawned Ffmpeg with command: ' + commandLine);
+	})
+	.on('error', function(err, one, two) {
+		// console.log('An error occurred: ' + err.message);
+		// console.log(two);
+		if (two.indexOf("virtual-audio-capturer") > -1) {
+			console.log("VIRTUAL DEVICE FOUND");
+			go();
+		} else if (redetection) {
+			console.log("Please re-run application and run as Administrator to install Virtual Audio Driver.");
+		} else {
+			wincmd.elevate("register_run_as_admin.bat", function () {
+				detectVirtualAudioDevice(true);
+			});
+		}
+    })
+    .on('end', function () {
+    	console.log("end");
+    })
+    
+	var ffstream = command.pipe();
+};
+detectVirtualAudioDevice();
