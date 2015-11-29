@@ -58,7 +58,7 @@ ondeviceup = host => {
     client.connect(host, () => {
         console.log('connected, launching app ...');
 
-        client.launch(DefaultMediaReceiver, (err, player) => {
+        client.launch(castv2DefaultMediaReceiver, (err, player) => {
             var media = {
 
                 // Here you can plug an URL to any mp4, webm, mp3 or jpg file with the proper contentType.
