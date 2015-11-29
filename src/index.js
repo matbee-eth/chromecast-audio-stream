@@ -51,7 +51,7 @@ app.get('/', (req, res) => {
 
 
 
-ondeviceup(host) => {
+ondeviceup = host => {
 
     var client = new castv2Client();
 
@@ -98,7 +98,7 @@ ondeviceup(host) => {
 }
 
 
-getIp() => {
+getIp = () => {
     var ip, alias = 0;
     var ifaces = os.networkInterfaces();
 
@@ -121,7 +121,7 @@ getIp() => {
     return ip;
 }
 
-go() => {
+go = () => {
     var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 
     browser.on('ready', browser.discover);
@@ -135,7 +135,7 @@ go() => {
 }
 
 
-detectVirtualAudioDevice(redetection) => {
+detectVirtualAudioDevice = redetection => {
     var command = ffmpeg("dummy");
     command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
     command.inputOptions([
