@@ -22,7 +22,7 @@ const server = app.listen(3000, console.log.bind(this, 'Example app listening at
 app.get('/', (req, res) => {
     req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
 
-    var command = ffmpeg();
+    let command = ffmpeg();
 
     command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
     command.input('audio=virtual-audio-capturer')
@@ -41,11 +41,8 @@ app.get('/', (req, res) => {
             res.end();
         })
 
-    var ffstream = command.pipe();
-    ffstream.on('data', chunk => {
-        // console.log('ffmpeg just wrote ' + chunk.length + ' bytes');
-        res.write(chunk);
-    });
+    let ffstream = command.pipe();
+    ffstream.on('data', res.write);
 });
 
 
@@ -53,7 +50,7 @@ app.get('/', (req, res) => {
 
 ondeviceup = host => {
 
-    var client = new castv2Client();
+    let client = new castv2Client();
 
     client.connect(host, () => {
         console.log('connected, launching app ...');
