@@ -24,7 +24,7 @@ module.exports = function(grunt) {
                     expand: true,
                     cwd: 'src/',
                     src: ['**/*.js'],
-                    dest: 'build/js'
+                    dest: 'build'
                 }]
             }
         },
@@ -41,7 +41,7 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('default', ['newer:babel']);
+    grunt.registerTask('default', ['babel']);
 
     grunt.registerTask('deps', ['ffmpeg_libs']);
 };
