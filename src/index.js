@@ -13,7 +13,7 @@ from 'castv2-client';
 
 
 const app = express();
-const server = app.listen(3000, console.log.bind('Example app listening at http://%s:%s', getIp(), server.address().port));
+const server = app.listen(3000, console.log.bind(this, 'Example app listening at http://%s:%s', getIp(), server.address().port));
 
 
 
@@ -155,12 +155,10 @@ detectVirtualAudioDevice = redetection => {
             } else if (redetection) {
                 console.log("Please re-run application and temporarily allow Administrator to install Virtual Audio Driver.");
             } else {
-                wincmd.elevate("register_run_as_admin.bat", () => {
-                    detectVirtualAudioDevice(true);
-                });
+                wincmd.elevate("register_run_as_admin.bat", detectVirtualAudioDevice.bind(this, true));
             }
         })
-        .on('end', console.log.bind('end'))
+        .on('end', console.log.bind(this, 'end'))
 
     var ffstream = command.pipe();
 };
