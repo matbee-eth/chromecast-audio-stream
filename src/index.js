@@ -1,57 +1,64 @@
-var express = require('express');
-var app = express();
-var ffmpeg = require('fluent-ffmpeg');
-var path = require('path');
+import express from 'express';
+import path from 'path';
+import ffmpeg from 'fluent-ffmpeg';
+import mdns from 'mdns';
+import os from 'os';
+import wincmd from 'node-windows';
+import {
+    Client as castv2Client,
+    DefaultMediaReceiver as castv2DefaultMediaReceiver
+}
+from 'castv2-client';
 
 
 
-app.get('/', function(req, res) {
+const app = express();
+const server = app.listen(3000, console.log.bind('Example app listening at http://%s:%s', getIp(), server.address().port));
+
+
+
+
+
+app.get('/', (req, res) => {
     req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
+
     var command = ffmpeg();
+
     command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
     command.input('audio=virtual-audio-capturer')
     command.inputFormat('dshow')
     command.audioCodec("libmp3lame")
     command.outputFormat("mp3")
-        .on('start', function(commandLine) {
+        .on('start', commandLine => {
             console.log('Spawned Ffmpeg with command: ' + commandLine);
         })
-        .on('error', function(err, one, two) {
+        .on('error', (err, one, two) => {
             console.log('An error occurred: ' + err.message);
             console.log(two);
         })
-        .on('end', function() {
+        .on('end', () => {
             console.log("end");
             res.end();
         })
 
     var ffstream = command.pipe();
-    ffstream.on('data', function(chunk) {
+    ffstream.on('data', chunk => {
         // console.log('ffmpeg just wrote ' + chunk.length + ' bytes');
         res.write(chunk);
     });
 });
 
-var server = app.listen(3000, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-
-    console.log('Example app listening at http://%s:%s', getIp(), port);
-});
-
-var Client = require('castv2-client').Client;
-var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
-var mdns = require('mdns-js');
 
 
-function ondeviceup(host) {
 
-    var client = new Client();
+ondeviceup(host) => {
 
-    client.connect(host, function() {
+    var client = new castv2Client();
+
+    client.connect(host, () => {
         console.log('connected, launching app ...');
 
-        client.launch(DefaultMediaReceiver, function(err, player) {
+        client.launch(DefaultMediaReceiver, (err, player) => {
             var media = {
 
                 // Here you can plug an URL to any mp4, webm, mp3 or jpg file with the proper contentType.
@@ -67,7 +74,7 @@ function ondeviceup(host) {
                 }
             };
 
-            player.on('status', function(status) {
+            player.on('status', status => {
                 console.log('status broadcast playerState=%s', status);
             });
 
@@ -75,7 +82,7 @@ function ondeviceup(host) {
 
             player.load(media, {
                 autoplay: true
-            }, function(err, status) {
+            }, (err, status) => {
                 console.log('media loaded playerState=%s', status);
             });
 
@@ -83,20 +90,20 @@ function ondeviceup(host) {
 
     });
 
-    client.on('error', function(err) {
+    client.on('error', err => {
         console.log('Error: %s', err.message);
         client.close();
     });
 
 }
 
-var os = require('os');
 
-function getIp() {
+getIp() => {
     var ip, alias = 0;
     var ifaces = os.networkInterfaces();
+
     for (var dev in ifaces) {
-        ifaces[dev].forEach(function(details) {
+        ifaces[dev].forEach(details => {
             if (details.family === 'IPv4') {
                 if (!/(loopback|vmware|internal|hamachi|vboxnet)/gi.test(dev + (alias ? ':' + alias : ''))) {
                     if (details.address.substring(0, 8) === '192.168.' ||
@@ -110,17 +117,16 @@ function getIp() {
             }
         });
     }
+
     return ip;
 }
 
-function go() {
+go() => {
     var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 
-    browser.on('ready', function() {
-        browser.discover();
-    });
+    browser.on('ready', browser.discover);
 
-    browser.on('update', function(service) {
+    browser.on('update', service => {
         console.log('data:', service);
         console.log('found device "%s" at %s:%d', service.name, service.addresses[0], service.port);
         ondeviceup(service.addresses[0]);
@@ -128,9 +134,8 @@ function go() {
     });
 }
 
-var wincmd = require('node-windows');
 
-function detectVirtualAudioDevice(redetection) {
+detectVirtualAudioDevice(redetection) => {
     var command = ffmpeg("dummy");
     command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
     command.inputOptions([
@@ -138,10 +143,10 @@ function detectVirtualAudioDevice(redetection) {
         "-f dshow",
     ])
     command.outputOptions([])
-        .on('start', function(commandLine) {
+        .on('start', commandLine => {
             console.log('Spawned Ffmpeg with command: ' + commandLine);
         })
-        .on('error', function(err, one, two) {
+        .on('error', (err, one, two) => {
             // console.log('An error occurred: ' + err.message);
             // console.log(two);
             if (two.indexOf("virtual-audio-capturer") > -1) {
@@ -150,14 +155,12 @@ function detectVirtualAudioDevice(redetection) {
             } else if (redetection) {
                 console.log("Please re-run application and temporarily allow Administrator to install Virtual Audio Driver.");
             } else {
-                wincmd.elevate("register_run_as_admin.bat", function() {
+                wincmd.elevate("register_run_as_admin.bat", () => {
                     detectVirtualAudioDevice(true);
                 });
             }
         })
-        .on('end', function() {
-            console.log("end");
-        })
+        .on('end', console.log.bind('end'))
 
     var ffstream = command.pipe();
 };
