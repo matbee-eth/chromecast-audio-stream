@@ -16,7 +16,7 @@ module.exports = function(grunt) {
             options: {
                 plugins: ['transform-minify-booleans', 'transform-property-literals', 'transform-simplify-comparison-operators', 'transform-merge-sibling-variables'],
                 presets: ['es2015'],
-                compact: true,
+                compact: false,
                 comments: false
             },
             dist: {

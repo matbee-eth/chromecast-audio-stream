@@ -1,23 +1,21 @@
 import express from 'express';
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
-import mdns from 'mdns';
+import mdns from 'mdns-js';
 import os from 'os';
-import wincmd from 'node-windows';
+var wincmd;
+try {
+    wincmd = require('node-windows');
+} catch (ex) {
+    wincmd = null;
+}
 import {
     Client as castv2Client,
     DefaultMediaReceiver as castv2DefaultMediaReceiver
 }
 from 'castv2-client';
 
-
-
 const app = express();
-const server = app.listen(3000, console.log.bind(this, 'Example app listening at http://%s:%s', getIp(), server.address().port));
-
-
-
-
 
 app.get('/', (req, res) => {
     req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
@@ -42,13 +40,10 @@ app.get('/', (req, res) => {
         })
 
     let ffstream = command.pipe();
-    ffstream.on('data', res.write);
+    ffstream.on('data', res.write.bind(res));
 });
 
-
-
-
-ondeviceup = host => {
+let ondeviceup = (host) => {
 
     let client = new castv2Client();
 
@@ -95,7 +90,7 @@ ondeviceup = host => {
 }
 
 
-getIp = () => {
+let getIp = () => {
     var ip, alias = 0;
     var ifaces = os.networkInterfaces();
 
@@ -118,7 +113,7 @@ getIp = () => {
     return ip;
 }
 
-go = () => {
+let go = () => {
     var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 
     browser.on('ready', browser.discover);
@@ -132,7 +127,7 @@ go = () => {
 }
 
 
-detectVirtualAudioDevice = redetection => {
+let detectVirtualAudioDevice = (redetection) => {
     var command = ffmpeg("dummy");
     command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
     command.inputOptions([
@@ -144,19 +139,26 @@ detectVirtualAudioDevice = redetection => {
             console.log('Spawned Ffmpeg with command: ' + commandLine);
         })
         .on('error', (err, one, two) => {
-            // console.log('An error occurred: ' + err.message);
-            // console.log(two);
-            if (two.indexOf("virtual-audio-capturer") > -1) {
-                console.log("VIRTUAL DEVICE FOUND");
-                go();
-            } else if (redetection) {
-                console.log("Please re-run application and temporarily allow Administrator to install Virtual Audio Driver.");
-            } else {
-                wincmd.elevate("register_run_as_admin.bat", detectVirtualAudioDevice.bind(this, true));
+            console.log('An error occurred: ' + err.message);
+            if (one, two) {
+                if (two.indexOf("virtual-audio-capturer") > -1) {
+                    console.log("VIRTUAL DEVICE FOUND");
+                    go();
+                } else if (redetection) {
+                    console.log("Please re-run application and temporarily allow Administrator to install Virtual Audio Driver.");
+                } else {
+                    wincmd.elevate("register_run_as_admin.bat", detectVirtualAudioDevice.bind(this, true));
+                }
             }
         })
         .on('end', console.log.bind(this, 'end'))
 
     var ffstream = command.pipe();
 };
+
+
+
+const server = app.listen(3000, function () {
+    console.log.bind(this, 'Example app listening at http://%s:%s', getIp(), server.address().port)
+});
 detectVirtualAudioDevice();
