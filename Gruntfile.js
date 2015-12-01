@@ -12,13 +12,6 @@ module.exports = function(grunt) {
                     cwd: '.',
                     src: ['package.json'],
                     dest: 'build/'
-                }, {
-                    cwd: 'node_modules/',
-                    src: Object.keys(packagejson.dependencies).map(function(dep) {
-                        return dep + '/**/*';
-                    }),
-                    dest: 'build/node_modules/',
-                    expand: true
                 }]
             },
             deps: {
@@ -27,6 +20,13 @@ module.exports = function(grunt) {
                     cwd: 'bin/ffmpeg',
                     src: ['**/*'],
                     dest: 'build/ffmpeg/'
+                }, {
+                    cwd: 'node_modules/',
+                    src: Object.keys(packagejson.dependencies).map(function(dep) {
+                        return dep + '/**/*';
+                    }),
+                    dest: 'build/node_modules/',
+                    expand: true
                 }]
             },
         },
@@ -50,7 +50,7 @@ module.exports = function(grunt) {
             electron: {
                 command: electron + ' . ' + (grunt.option('dev') ? '--dev' : ''),
                 options: {
-                    async: true,
+                    async: false,
                     execOptions: {
                         cwd: 'build'
                     }
