@@ -8,6 +8,7 @@
     },
     "author": "",
     "license": "ISC",
+    "electron-version": "0.35.1",
     "dependencies": {
         "castv2": "^0.1.4",
         "castv2-client": "^1.1.0",
@@ -26,9 +27,16 @@
         "grunt-babel": "^6.0.0",
         "grunt-contrib-clean": "^0.7.0",
         "grunt-ffmpeg-libs": "0.0.1",
+        "grunt-shell": "^1.1.2",
+        "grunt-shell-spawn": "^0.3.10",
+        "grunt-contrib-watch-chokidar": "^1.0.0",
+        "grunt-electron": "^2.0.1",
+        "grunt-newer": "^1.1.1",
+        "grunt-shell": "^1.1.2",
         "load-grunt-tasks": "^3.3.0"
     },
     "optionalDependencies": {
-        "node-windows": "^0.1.10"
+        "node-windows": "^0.1.10",
+        "electron-prebuilt": "0.35.1"
     }
 }
