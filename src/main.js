@@ -3,7 +3,6 @@ import BrowserWindow from 'browser-window';
 import yargs from 'yargs';
 
 const args = yargs(process.argv.slice(1)).wrap(100).argv;
-console.log('test')
 
 /* Some usefull chrome args */
 app.commandLine.appendSwitch('v', -1);
