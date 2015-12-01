@@ -1,4 +1,5 @@
 var electron = require('electron-prebuilt');
+var packagejson = require('./package.json');
 
 module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
@@ -11,6 +12,13 @@ module.exports = function(grunt) {
                     cwd: '.',
                     src: ['package.json'],
                     dest: 'build/'
+                }, {
+                    cwd: 'node_modules/',
+                    src: Object.keys(packagejson.dependencies).map(function(dep) {
+                        return dep + '/**/*';
+                    }),
+                    dest: 'build/node_modules/',
+                    expand: true
                 }]
             },
             deps: {

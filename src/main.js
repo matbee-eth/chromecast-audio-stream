@@ -2,6 +2,7 @@ import app from 'app';
 import BrowserWindow from 'browser-window';
 import yargs from 'yargs';
 
+console.log('test')
 
 /* Some usefull chrome args */
 app.commandLine.appendSwitch('v', -1);
@@ -15,7 +16,7 @@ app.on('ready', () => {
     var mainWindow = new BrowserWindow({
         center: true,
         frame: true,
-        show: false
+        show: true
     });
 
     if (args.dev) {
