@@ -1,8 +1,18 @@
+var electron = require('electron-prebuilt');
+
 module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
     grunt.initConfig({
         copy: {
+            dev: {
+                files: [{
+                    expand: true,
+                    cwd: '.',
+                    src: ['package.json'],
+                    dest: 'build/'
+                }]
+            },
             deps: {
                 files: [{
                     expand: true,
@@ -28,6 +38,17 @@ module.exports = function(grunt) {
                 }]
             }
         },
+        shell: {
+            electron: {
+                command: electron + ' . ' + (grunt.option('dev') ? '--dev' : ''),
+                options: {
+                    async: true,
+                    execOptions: {
+                        cwd: 'build'
+                    }
+                }
+            }
+        },
         clean: {
             release: ['build/'],
         },
@@ -41,7 +62,7 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('default', ['babel']);
+    grunt.registerTask('default', ['babel', 'copy:dev', 'shell:electron']);
 
-    grunt.registerTask('deps', ['ffmpeg_libs']);
+    grunt.registerTask('deps', ['ffmpeg_libs', 'copy:deps']);
 };
