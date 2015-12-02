@@ -12,6 +12,7 @@ import {
     EventEmitter
 }
 from 'events';
+import getPort from 'get-port';
 
 import {
     Client as castv2Client,
@@ -20,10 +21,11 @@ import {
 from 'castv2-client';
 
 try {
-    var wincmd = require('node-windows');
+    const wincmd = require('node-windows');
 } catch (ex) {
-    var wincmd = null;
+    const wincmd = null;
 }
+
 
 const app = express();
 
