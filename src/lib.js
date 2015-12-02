@@ -199,5 +199,7 @@ class App extends EventEmitter {
     }
 }
 
+let instance = new App;
+instance.searchForDevices();
 
-module.exports = new App();
+module.exports = instance;

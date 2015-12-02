@@ -20,13 +20,19 @@ app.commandLine.appendSwitch('disable-speech-api');
 
 
 app.on('ready', () => {
-    /*
+    
     const appIcon = new Tray('icon.png');
-
-    appIcon.setContextMenu(contextMenu);
-    */
+    
     lib.on("deviceFound", (host, devicename) => {
         console.log(host, devicename);
+        contextMenu.append(new MenuItem({
+            label: devicename,
+            type: 'checkbox',
+            click: () => {
+                lib.stream(host);
+            }
+        }));
+        appIcon.setContextMenu(contextMenu);
     });
 
 });
