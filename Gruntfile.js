@@ -17,6 +17,11 @@ module.exports = function(grunt) {
             deps: {
                 files: [{
                     expand: true,
+                    cwd: 'bin/driver/' + process.platform,
+                    src: ['**/*'],
+                    dest: 'build/driver/'
+                }, {
+                    expand: true,
                     cwd: 'bin/ffmpeg',
                     src: ['**/*'],
                     dest: 'build/ffmpeg/'
