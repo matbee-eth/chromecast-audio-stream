@@ -14,9 +14,9 @@ from 'events';
 import getPort from 'get-port';
 
 try {
-    var wincmd = require('node-windows');
+    const wincmd = require('node-windows');
 } catch (ex) {
-    var wincmd = null;
+    const wincmd = null;
 }
 
 import {
