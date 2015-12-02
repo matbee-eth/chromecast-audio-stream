@@ -1,44 +1,45 @@
 {
-    "name": "audio-cast",
-    "version": "1.0.0",
-    "description": "",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "postinstall": "grunt deps"
-    },
-    "author": "",
-    "license": "ISC",
-    "electron-version": "0.35.1",
-    "main": "main.js",
-    "dependencies": {
-        "castv2": "^0.1.4",
-        "castv2-client": "^1.1.0",
-        "express": "^4.13.3",
-        "fluent-ffmpeg": "^2.0.1",
-        "mdns-js": "^0.4.0",
-        "yargs": "^3.30.0",
-        "node-windows": "^0.1.10"
-    },
-    "devDependencies": {
-        "babel": "^6.1.18",
-        "babel-plugin-transform-merge-sibling-variables": "^6.1.18",
-        "babel-plugin-transform-minify-booleans": "^6.1.18",
-        "babel-plugin-transform-property-literals": "^6.1.18",
-        "babel-plugin-transform-simplify-comparison-operators": "^6.1.18",
-        "babel-preset-es2015": "^6.1.18",
-        "grunt": "^0.4.5",
-        "grunt-babel": "^6.0.0",
-        "grunt-contrib-clean": "^0.7.0",
-        "grunt-contrib-compress": "^0.14.0",
-        "grunt-contrib-copy": "^0.8.2",
-        "grunt-ffmpeg-libs": "0.0.1",
-        "grunt-shell": "^1.1.2",
-        "grunt-shell-spawn": "^0.3.10",
-        "grunt-electron": "^2.0.1",
-        "grunt-newer": "^1.1.1",
-        "load-grunt-tasks": "^3.3.0"
-    },
-    "optionalDependencies": {
-        "electron-prebuilt": "0.35.1"
-    }
+  "name": "audio-cast",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "grunt deps"
+  },
+  "author": "",
+  "license": "ISC",
+  "electron-version": "0.35.1",
+  "main": "main.js",
+  "dependencies": {
+    "async": "^1.5.0",
+    "castv2": "^0.1.4",
+    "castv2-client": "^1.1.0",
+    "express": "^4.13.3",
+    "fluent-ffmpeg": "^2.0.1",
+    "mdns-js": "^0.4.0",
+    "node-windows": "^0.1.10",
+    "yargs": "^3.30.0"
+  },
+  "devDependencies": {
+    "babel": "^6.1.18",
+    "babel-plugin-transform-merge-sibling-variables": "^6.1.18",
+    "babel-plugin-transform-minify-booleans": "^6.1.18",
+    "babel-plugin-transform-property-literals": "^6.1.18",
+    "babel-plugin-transform-simplify-comparison-operators": "^6.1.18",
+    "babel-preset-es2015": "^6.1.18",
+    "grunt": "^0.4.5",
+    "grunt-babel": "^6.0.0",
+    "grunt-contrib-clean": "^0.7.0",
+    "grunt-contrib-compress": "^0.14.0",
+    "grunt-contrib-copy": "^0.8.2",
+    "grunt-ffmpeg-libs": "0.0.1",
+    "grunt-shell": "^1.1.2",
+    "grunt-shell-spawn": "^0.3.10",
+    "grunt-electron": "^2.0.1",
+    "grunt-newer": "^1.1.1",
+    "load-grunt-tasks": "^3.3.0"
+  },
+  "optionalDependencies": {
+    "electron-prebuilt": "0.35.1"
+  }
 }

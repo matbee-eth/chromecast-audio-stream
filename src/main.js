@@ -1,6 +1,13 @@
 import app from 'app';
 import BrowserWindow from 'browser-window';
 import yargs from 'yargs';
+var lib;
+
+const electron = require('electron');
+const Tray = electron.Tray;
+const Menu = electron.Menu;
+const MenuItem = electron.MenuItem;
+var contextMenu = new Menu();
 
 const args = yargs(process.argv.slice(1)).wrap(100).argv;
 
@@ -9,25 +16,18 @@ app.commandLine.appendSwitch('v', -1);
 app.commandLine.appendSwitch('vmodule', 'console=0');
 app.commandLine.appendSwitch('disable-speech-api');
 
-
+app.dock.hide()
 
 app.on('ready', () => {
-
-    var mainWindow = new BrowserWindow({
-        center: true,
-        frame: true,
-        show: false
+    var appIcon = new Tray('icon.png');
+    appIcon.setContextMenu(contextMenu);
+    lib = require('./lib');
+    lib.on("deviceFound", function (host, devicename) {
+        contextMenu.append(new MenuItem({ label: 'MenuItem2', type: 'checkbox', click: function () {
+            lib.stream(host);
+        }}));
+        appIcon.setContextMenu(contextMenu);
     });
-
-    if (args.dev) {
-        mainWindow.show();
-        mainWindow.toggleDevTools();
-        mainWindow.focus();
-        console.info('Dev Mode Active: Developer Tools Enabled.');
-    }
-
-    mainWindow.on('close', app.quit);
-
 });
 
 app.on('window-all-closed', app.quit);
