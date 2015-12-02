@@ -7,23 +7,23 @@ import os from 'os';
 import net from 'net';
 import async from 'async';
 import util from 'util';
+import getPort from 'get-port';
 import {
     EventEmitter
 }
 from 'events';
-import getPort from 'get-port';
-
-try {
-    var wincmd = require('node-windows');
-} catch (ex) {
-    var wincmd = null;
-}
 
 import {
     Client as castv2Client,
     DefaultMediaReceiver as castv2DefaultMediaReceiver
 }
 from 'castv2-client';
+
+try {
+    var wincmd = require('node-windows');
+} catch (ex) {
+    var wincmd = null;
+}
 
 const app = express();
 
@@ -109,15 +109,15 @@ class App extends EventEmitter {
                         }
                     }
                 })
-                .on('end', console.log.bind(this, 'end'))
+                .on('end', console.log(console, 'end'))
             let ffstream = command.pipe();
         });
 
     }
     ondeviceup(host, name) {
+        console.info("ondeviceup", host, name);
         if (this.devices.indexOf(host) == -1) {
             this.devices.push(host);
-            console.info("ondeviceup", host, this.devices);
             this.emit("deviceFound", host, name);
         }
     }
@@ -143,6 +143,7 @@ class App extends EventEmitter {
         return ip;
     }
     searchForDevices() {
+        console.info("searchForDevices::");
         let browser = mdns.createBrowser(mdns.tcp('googlecast'));
         browser.on('ready', browser.discover);
 
@@ -150,7 +151,6 @@ class App extends EventEmitter {
             console.log('data:', service);
             console.log('found device "%s" at %s:%d', service.fullname.substring(0, service.fullname.indexOf("._googlecast")), service.addresses[0], service.port);
             this.ondeviceup(service.addresses[0], service.fullname.indexOf("._googlecast"));
-            browser.stop();
         });
     }
     stream(host) {

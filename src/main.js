@@ -1,3 +1,8 @@
+process.on('uncaughtException', function(err) {
+  console.log('Caught exception: ', err);
+});
+
+
 import app from 'app';
 import BrowserWindow from 'browser-window';
 import yargs from 'yargs';
@@ -5,7 +10,7 @@ import {
     Tray, Menu, MenuItem
 }
 from 'electron';
-import lib from './lib';
+var lib;
 
 
 
@@ -20,7 +25,7 @@ app.commandLine.appendSwitch('disable-speech-api');
 
 
 app.on('ready', () => {
-    
+    lib = require('./lib');
     const appIcon = new Tray('icon.png');
     
     lib.on("deviceFound", (host, devicename) => {
