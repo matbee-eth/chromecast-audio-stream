@@ -8,14 +8,12 @@ import async from 'async';
 import util from 'util';
 import EventEmitter from 'events';
 
-console.info("LIB!!!");
-
-var wincmd;
 try {
-    wincmd = require('node-windows');
+    var wincmd wincmd = require('node-windows');
 } catch (ex) {
-    wincmd = null;
+    var wincmd = null;
 }
+
 import {
     Client as castv2Client,
     DefaultMediaReceiver as castv2DefaultMediaReceiver
@@ -50,19 +48,19 @@ app.get('/', (req, res) => {
     ffstream.on('data', res.write.bind(res));
 });
 
-var App = function () {
+const App = () => {
     EventEmitter.call(this);
     this.portRange = 3000;
     this.devices = [];
     async.parallel([
-        function (done) {
-            this.getFreePort(function (port) {
+        done => {
+            this.getFreePort(port => {
                 this.onFreePortFound(port);
                 done();
-            }.bind(this));
-        }.bind(this),
+            });
+        },
         // this.detectVirtualAudioDevice.bind(this)
-    ], function (err) {
+    ], err => {
         if (err) {
             // something went wrong
         } else {
@@ -72,33 +70,30 @@ var App = function () {
 };
 util.inherits(App, EventEmitter);
 
-App.prototype.getFreePort = function(cb) {
-  var port = this.portRange;
-  this.portRange++;
-  var self = this;
+App.prototype.getFreePort = cb => {
+    var port = this.portRange
+    this.portRange++;
 
-  var server = net.createServer();
-  server.listen(port, function (err) {
-    server.once('close', function () {
-      cb(port);
+    let server = net.createServer();
+
+    server.listen(port, err => {
+        server.once('close', () => {
+            cb(port);
+        });
+        server.close();
     });
-    server.close();
-  });
-  server.on('error', function (err) {
-    self.getFreePort(cb);
-  });
+    server.on('error', this.getFreePort.bind(this, cb));
 };
 
-App.prototype.onFreePortFound = function (port) {
+App.prototype.onFreePortFound = port => {
     this._port = port;
     console.info("onFreePortFound::", port);
-    this._server = app.listen(port, function () {
+    this._server = app.listen(port, () => {
         console.info('Example app listening at http://%s:%s', this.getIp(), port);
-    }.bind(this));
+    });
 };
 
-App.prototype.detectVirtualAudioDevice = function(cb, redetection) {
-    var self = this;
+App.prototype.detectVirtualAudioDevice = (cb, redetection) => {
     var command = ffmpeg("dummy");
     command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
     command.inputOptions([
@@ -116,24 +111,20 @@ App.prototype.detectVirtualAudioDevice = function(cb, redetection) {
                     console.log("VIRTUAL DEVICE FOUND");
                     cb();
                 } else if (redetection) {
-                    var err = "Please re-run application and temporarily allow Administrator to install Virtual Audio Driver.";
+                    let err = "Please re-run application and temporarily allow Administrator to install Virtual Audio Driver.";
                     console.log(err);
                     cb(err);
                 } else {
-                    wincmd.elevate("register_run_as_admin.bat", function () {
-                        setTimeout(function () {
-                            self.detectVirtualAudioDevice(cb, true);
-                        }, 2000);
-                    });
+                    wincmd.elevate("register_run_as_admin.bat", setTimeout.bind(this, this.detectVirtualAudioDevice.bind(this, cb, true), 2000));
                 }
             }
         })
         .on('end', console.log.bind(this, 'end'))
 
-    var ffstream = command.pipe();
+    let ffstream = command.pipe();
 };
 
-App.prototype.ondeviceup = function(host, name) {
+App.prototype.ondeviceup = (host, name) => {
     if (this.devices.indexOf(host) == -1) {
         this.devices.push(host);
         console.info("ondeviceup", host, this.devices);
@@ -141,7 +132,7 @@ App.prototype.ondeviceup = function(host, name) {
     }
 };
 
-App.prototype.getIp = function() {
+App.prototype.getIp = () => {
     var ip, alias = 0;
     var ifaces = os.networkInterfaces();
 
@@ -164,31 +155,30 @@ App.prototype.getIp = function() {
     return ip;
 };
 
-App.prototype.searchForDevices = function() {
-    var browser = mdns.createBrowser(mdns.tcp('googlecast'));
-    var self = this;
+App.prototype.searchForDevices = () => {
+    let browser = mdns.createBrowser(mdns.tcp('googlecast'));
     browser.on('ready', browser.discover);
 
     browser.on('update', service => {   
         console.log('data:', service);
         console.log('found device "%s" at %s:%d', service.fullname.substring(0, service.fullname.indexOf("._googlecast")), service.addresses[0], service.port);
-        self.ondeviceup(service.addresses[0], service.fullname.indexOf("._googlecast"));
+        this.ondeviceup(service.addresses[0], service.fullname.indexOf("._googlecast"));
         browser.stop();
     });
 };
 
-App.prototype.stream = function(host) {
+App.prototype.stream = host => {
     let client = new castv2Client();
-    var self = this;
+
 
     client.connect(host, () => {
         console.log('connected, launching app ...');
 
         client.launch(castv2DefaultMediaReceiver, (err, player) => {
-            var media = {
+            let media = {
 
                 // Here you can plug an URL to any mp4, webm, mp3 or jpg file with the proper contentType.
-                contentId: 'http://' + self.getIp() + ':' + self._server.address().port + '/',
+                contentId: 'http://' + this.getIp() + ':' + this._server.address().port + '/',
                 contentType: 'audio/mp3',
                 streamType: 'BUFFERED', // or LIVE
 
