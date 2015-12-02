@@ -9,7 +9,7 @@ import util from 'util';
 import EventEmitter from 'events';
 
 try {
-    var wincmd wincmd = require('node-windows');
+    var wincmd = require('node-windows');
 } catch (ex) {
     var wincmd = null;
 }
