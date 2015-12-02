@@ -12,7 +12,6 @@ import {
     EventEmitter
 }
 from 'events';
-import getPort from 'get-port';
 
 import {
     Client as castv2Client,
