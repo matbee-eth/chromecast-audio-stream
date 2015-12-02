@@ -73,7 +73,7 @@ var App = function () {
 util.inherits(App, EventEmitter);
 
 App.prototype.getFreePort = function(cb) {
-  var port = this.portRange
+  var port = this.portRange;
   this.portRange++;
   var self = this;
 
@@ -169,7 +169,7 @@ App.prototype.searchForDevices = function() {
     var self = this;
     browser.on('ready', browser.discover);
 
-    browser.on('update', service => {
+    browser.on('update', service => {   
         console.log('data:', service);
         console.log('found device "%s" at %s:%d', service.fullname.substring(0, service.fullname.indexOf("._googlecast")), service.addresses[0], service.port);
         self.ondeviceup(service.addresses[0], service.fullname.indexOf("._googlecast"));
