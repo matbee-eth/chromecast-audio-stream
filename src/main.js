@@ -10,7 +10,7 @@ import lib from './lib';
 
 
 const args = yargs(process.argv.slice(1)).wrap(100).argv;
-const contextMenu = new Menu();
+var contextMenu = new Menu();
 
 /* Some usefull chrome args */
 app.commandLine.appendSwitch('v', -1);

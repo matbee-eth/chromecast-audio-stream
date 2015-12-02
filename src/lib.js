@@ -66,7 +66,6 @@ class App extends EventEmitter {
 
     init() {
         this.setupServer();
-        return this;
     }
 
     setupServer() {
