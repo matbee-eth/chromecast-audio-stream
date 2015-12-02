@@ -53,8 +53,6 @@ app.get('/', (req, res) => {
     ffstream.on('data', res.write.bind(res));
 });
 
-
-
 class App extends EventEmitter {
     constructor(props) {
         super();
@@ -62,10 +60,13 @@ class App extends EventEmitter {
         this.port = false;
         this.devices = [];
         this.server = false;
+
+        this.init();
     }
 
-    get port() {
-        return this.port;
+    init() {
+        this.setupServer();
+        return this;
     }
 
     setupServer() {
@@ -121,8 +122,8 @@ class App extends EventEmitter {
             this.emit("deviceFound", host, name);
         }
     }
-    static getIp() {
-        const ip = false
+    getIp() {
+        var ip = false
         var alias = 0;
         let ifaces = os.networkInterfaces();
         for (var dev in ifaces) {
@@ -199,8 +200,4 @@ class App extends EventEmitter {
 }
 
 
-let instance = new App;
-instance.searchForDevices();
-
-export
-default instance;
+module.exports = new App();
