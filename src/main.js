@@ -1,8 +1,3 @@
-process.on('uncaughtException', function(err) {
-  console.log('Caught exception: ', err);
-});
-
-
 import app from 'app';
 import BrowserWindow from 'browser-window';
 import yargs from 'yargs';

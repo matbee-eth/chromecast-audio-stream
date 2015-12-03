@@ -149,9 +149,11 @@ class App extends EventEmitter {
         browser.on('ready', browser.discover);
 
         browser.on('update', service => {
-            console.log('data:', service);
-            console.log('found device "%s" at %s:%d', service.fullname.substring(0, service.fullname.indexOf("._googlecast")), service.addresses[0], service.port);
-            this.ondeviceup(service.addresses[0], service.fullname.indexOf("._googlecast"));
+            if (service.addresses && service.fullname) {
+                console.log('data:', service);
+                console.log('found device "%s" at %s:%d', service.fullname.substring(0, service.fullname.indexOf("._googlecast")), service.addresses[0], service.port);
+                this.ondeviceup(service.addresses[0], service.fullname.substring(0, service.fullname.indexOf("._googlecast")));
+            }
         });
     }
     stream(host) {
@@ -164,7 +166,7 @@ class App extends EventEmitter {
                 let media = {
 
                     // Here you can plug an URL to any mp4, webm, mp3 or jpg file with the proper contentType.
-                    contentId: 'http://' + this.getIp() + ':' + this._server.address().port + '/',
+                    contentId: 'http://' + this.getIp() + ':' + this.server.address().port + '/',
                     contentType: 'audio/mp3',
                     streamType: 'BUFFERED', // or LIVE
 
