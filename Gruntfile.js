@@ -21,18 +21,6 @@ module.exports = function(grunt) {
                     src: ['**/*'],
                     dest: 'build/driver/'
                 }, {
-                    expand: true,
-                    cwd: 'bin/ffmpeg',
-                    src: ['**/*'],
-                    dest: 'build/ffmpeg/'
-                },
-                {
-                    expand: true,
-                    cwd: '/bin/driver',
-                    src: ['**/*'],
-                    dest: 'build/driver'
-                },
-                {
                     cwd: 'node_modules/',
                     src: Object.keys(packagejson.dependencies).map(function(dep) {
                         return dep + '/**/*';
