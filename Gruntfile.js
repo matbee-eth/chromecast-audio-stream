@@ -12,6 +12,12 @@ module.exports = function(grunt) {
                     cwd: '.',
                     src: ['package.json'],
                     dest: 'build/'
+                },
+                {
+                    cwd: 'src/',
+                    expand: true,
+                    src: ['**/*.png'],
+                    dest: 'build'
                 }]
             },
             deps: {

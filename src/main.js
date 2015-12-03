@@ -17,12 +17,17 @@ app.commandLine.appendSwitch('v', -1);
 app.commandLine.appendSwitch('vmodule', 'console=0');
 app.commandLine.appendSwitch('disable-speech-api');
 
-
-
 app.on('ready', () => {
     lib = require('./lib');
-    const appIcon = new Tray('icon.png');
-    
+    console.info(process.cwd())
+    const appIcon = new Tray('cast.png');
+    appIcon.on('click', function(ev, bounds) {
+        console.info(bounds);
+       appIcon.popUpContextMenu(contextMenu, {x: bounds.x, y: bounds.y-bounds.height});
+    });
+    appIcon.on('right-click', function (ev, bounds) {
+        console.info(ev, bounds);
+    })
     lib.on("deviceFound", (host, devicename) => {
         console.log(host, devicename);
         contextMenu.append(new MenuItem({

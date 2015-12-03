@@ -19,6 +19,7 @@
     "fluent-ffmpeg": "^2.0.1",
     "get-port": "^2.1.0",
     "mdns-js": "^0.4.0",
+    "node-windows": "^0.1.10",
     "yargs": "^3.30.0"
   },
   "devDependencies": {

@@ -29,11 +29,11 @@ try {
 const app = express();
 
 app.get('/', (req, res) => {
-    req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
     console.log("Device requested: /");
+    req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
     let command = ffmpeg();
 
-    command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
+    command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg', 'ffmpeg'));
     command.input('audio=virtual-audio-capturer')
     command.inputFormat('dshow')
     command.audioCodec("libmp3lame")
@@ -66,7 +66,7 @@ class App extends EventEmitter {
     }
 
     init() {
-        this.setupServer();
+        this.setupServer().then(this.detectVirtualAudioDevice.bind(this));
     }
 
     setupServer() {
@@ -85,7 +85,7 @@ class App extends EventEmitter {
 
     detectVirtualAudioDevice(redetection) {
         let command = ffmpeg("dummy");
-        command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg'));
+        command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg', 'ffmpeg'));
         command.inputOptions([
             "-list_devices true",
             "-f dshow",
@@ -106,17 +106,20 @@ class App extends EventEmitter {
                             console.log(err);
                             reject(err);
                         } else {
-                            reject('NOPERMS');
+                            wincmd.elevate("regsvr32 %~dp0\\audio_sniffer.dll /s", () => {
+                                this.detectVirtualAudioDevice(true);
+                            });
                         }
                     }
                 })
-                .on('end', console.log(console, 'end'))
+                .on('end', () => {
+                    console.log('end');
+                })
             let ffstream = command.pipe();
         });
 
     }
     ondeviceup(host, name) {
-        console.info("ondeviceup", host, name);
         if (this.devices.indexOf(host) == -1) {
             this.devices.push(host);
             this.emit("deviceFound", host, name);
@@ -129,7 +132,7 @@ class App extends EventEmitter {
         for (var dev in ifaces) {
             ifaces[dev].forEach(details => {
                 if (details.family === 'IPv4') {
-                    if (!/(loopback|vmware|internal|hamachi|vboxnet)/gi.test(dev + (alias ? ':' + alias : ''))) {
+                    if (!/(loopback|vmware|internal|hamachi|vboxnet|virtualbox)/gi.test(dev + (alias ? ':' + alias : ''))) {
                         if (details.address.substring(0, 8) === '192.168.' ||
                             details.address.substring(0, 7) === '172.16.' ||
                             details.address.substring(0, 5) === '10.0.'
@@ -144,14 +147,11 @@ class App extends EventEmitter {
         return ip;
     }
     searchForDevices() {
-        console.info("searchForDevices::");
         let browser = mdns.createBrowser(mdns.tcp('googlecast'));
         browser.on('ready', browser.discover);
 
-        browser.on('update', service => {
+        browser.on('update', (service) => {
             if (service.addresses && service.fullname) {
-                console.log('data:', service);
-                console.log('found device "%s" at %s:%d', service.fullname.substring(0, service.fullname.indexOf("._googlecast")), service.addresses[0], service.port);
                 this.ondeviceup(service.addresses[0], service.fullname.substring(0, service.fullname.indexOf("._googlecast")));
             }
         });
@@ -160,7 +160,7 @@ class App extends EventEmitter {
         let client = new castv2Client();
 
         client.connect(host, () => {
-            console.log('connected, launching app ...');
+            console.log('connected, launching app ...', 'http://' + this.getIp() + ':' + this.server.address().port + '/');
 
             client.launch(castv2DefaultMediaReceiver, (err, player) => {
                 let media = {
