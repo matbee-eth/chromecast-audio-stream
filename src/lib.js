@@ -8,6 +8,7 @@ import net from 'net';
 import async from 'async';
 import util from 'util';
 import getPort from 'get-port';
+import childProcess from 'child_process';
 import {
     EventEmitter
 }
@@ -109,11 +110,23 @@ class App extends EventEmitter {
                             console.log(err);
                             reject(err);
                         } else {
-                            var dllPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audio_sniffer.dll')
-                            console.log("DLLPATH", "regsvr32 "+dllPath+" /s");
-                            wincmd.elevate("regsvr32 "+dllPath+" /s", () => {
+                            var driverPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform);
+                            var dllPath = path.join(driverPath, "audio_sniffer.dll");
+                            var regsvrPath = path.join(driverPath, "RegSvrEx.exe");
+
+                            console.log("DLL INSTALL", regsvrPath + " /c " + dllPath);
+                            var child = childProcess.exec(regsvrPath + " /c " + dllPath,
+                            function (error, stdout, stderr) {
+                                console.log('stdout: ' + stdout);
+                                console.log('stderr: ' + stderr);
+                                if (error !== null) {
+                                  console.log('exec error: ' + error);
+                                }
                                 this.detectVirtualAudioDevice(true);
-                            });
+                            }.bind(this));
+                            // wincmd.elevate(regsvrPath + " /c " + dllPath, () => {
+                            //     this.detectVirtualAudioDevice(true);
+                            // });
                         }
                     }
                 })
