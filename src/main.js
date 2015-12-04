@@ -1,6 +1,5 @@
 import app from 'app';
 import BrowserWindow from 'browser-window';
-import yargs from 'yargs';
 import {
     Tray, Menu, MenuItem
 }
@@ -8,8 +7,6 @@ from 'electron';
 var lib;
 
 
-
-const args = yargs(process.argv.slice(1)).wrap(100).argv;
 var contextMenu = new Menu();
 
 /* Some usefull chrome args */
