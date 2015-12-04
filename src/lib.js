@@ -54,6 +54,10 @@ app.get('/', (req, res) => {
     ffstream.on('data', res.write.bind(res));
 });
 
+var getFFmpegCommandWindows () => {
+
+}
+
 class App extends EventEmitter {
     constructor(props) {
         super();
@@ -119,6 +123,16 @@ class App extends EventEmitter {
         });
 
     }
+
+    detectVirtualAudioDeviceWindows (redetection) {
+
+    }
+
+    detectVirtualAudioDeviceOSX (redetection) {
+        // ffmpeg -f avfoundation -list_devices true -i ""
+        // ffmpeg -f avfoundation -i "none:{{SoundFlower INDEX}}" out.mp3
+    }
+
     ondeviceup(host, name) {
         if (this.devices.indexOf(host) == -1) {
             this.devices.push(host);
