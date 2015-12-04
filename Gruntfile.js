@@ -51,18 +51,18 @@ module.exports = function(grunt) {
                     src: Object.keys(packagejson.dependencies).map(function(dep) {
                         return dep + '/**/*';
                     }),
-                    dest: 'build/node_modules/',
+                    dest: 'dist/' + APP_NAME + '-win32-ia32/node_modules/',
                     expand: true
                 }, {
                     expand: true,
                     cwd: '.',
                     src: ['package.json'],
-                    dest: 'build/'
+                    dest: 'dist/' + APP_NAME + '-win32-ia32/',
                 }, {
                     cwd: 'src/',
                     expand: true,
                     src: ['*.png'],
-                    dest: 'build'
+                    dest: 'dist/' + APP_NAME + '-win32-ia32/',
                 }]
             }
         },
@@ -73,12 +73,20 @@ module.exports = function(grunt) {
                 compact: false,
                 comments: false
             },
-            dist: {
+            build: {
                 files: [{
                     expand: true,
                     cwd: 'src/',
                     src: ['**/*.js'],
                     dest: 'build'
+                }]
+            },
+            dist: {
+                files: [{
+                    expand: true,
+                    cwd: 'src/',
+                    src: ['**/*.js'],
+                    dest: 'dist/' + APP_NAME + '-win32-ia32'
                 }]
             }
         },
@@ -142,7 +150,7 @@ module.exports = function(grunt) {
     grunt.registerTask('deps', ['copy:node_modules']);
 
     if (process.platform === 'win32') {
-        grunt.registerTask('release', ['clean:build', 'babel', 'copy:release', 'electron:windows', 'copy:depsWindows', 'compress:windows']);
+        grunt.registerTask('release', ['clean:release', 'electron:windows', 'babel:dist', 'copy:release', 'copy:depsWindows', 'compress:windows']);
     }
 
 };

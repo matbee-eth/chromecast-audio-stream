@@ -109,7 +109,9 @@ class App extends EventEmitter {
                             console.log(err);
                             reject(err);
                         } else {
-                            wincmd.elevate("regsvr32 %~dp0\\audio_sniffer.dll /s", () => {
+                            var dllPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audio_sniffer.dll')
+                            console.log("DLLPATH", "regsvr32 "+dllPath+" /s");
+                            wincmd.elevate("regsvr32 "+dllPath+" /s", () => {
                                 this.detectVirtualAudioDevice(true);
                             });
                         }
