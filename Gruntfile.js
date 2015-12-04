@@ -4,6 +4,9 @@ var packagejson = require('./package.json');
 module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
+    var APP_NAME = "audio-cast";
+    var APP_VERSION = packagejson.version;
+
     grunt.initConfig({
         copy: {
             dev: {
@@ -12,21 +15,28 @@ module.exports = function(grunt) {
                     cwd: '.',
                     src: ['package.json'],
                     dest: 'build/'
-                },
-                {
+                }, {
                     cwd: 'src/',
                     expand: true,
                     src: ['**/*.png'],
                     dest: 'build'
+                }, {
+                    expand: true,
+                    cwd: 'bin/',
+                    src: ['**/*'],
+                    dest: 'build/resources/bin/'
                 }]
             },
-            deps: {
+            depsWindows: {
                 files: [{
                     expand: true,
-                    cwd: 'bin/driver/' + process.platform,
+                    cwd: 'bin/',
                     src: ['**/*'],
-                    dest: 'build/driver/'
-                }, {
+                    dest: 'dist/' + APP_NAME + '-win32-ia32/resources/bin/'
+                }]
+            },
+            node_modules: {
+                files: [{
                     cwd: 'node_modules/',
                     src: Object.keys(packagejson.dependencies).map(function(dep) {
                         return dep + '/**/*';
@@ -35,6 +45,26 @@ module.exports = function(grunt) {
                     expand: true
                 }]
             },
+            release: {
+                files: [{
+                    cwd: 'node_modules/',
+                    src: Object.keys(packagejson.dependencies).map(function(dep) {
+                        return dep + '/**/*';
+                    }),
+                    dest: 'dist/' + APP_NAME + '-win32-ia32/node_modules/',
+                    expand: true
+                }, {
+                    expand: true,
+                    cwd: '.',
+                    src: ['package.json'],
+                    dest: 'dist/' + APP_NAME + '-win32-ia32/',
+                }, {
+                    cwd: 'src/',
+                    expand: true,
+                    src: ['*.png'],
+                    dest: 'dist/' + APP_NAME + '-win32-ia32/',
+                }]
+            }
         },
         babel: {
             options: {
@@ -43,12 +73,20 @@ module.exports = function(grunt) {
                 compact: false,
                 comments: false
             },
-            dist: {
+            build: {
                 files: [{
                     expand: true,
                     cwd: 'src/',
                     src: ['**/*.js'],
                     dest: 'build'
+                }]
+            },
+            dist: {
+                files: [{
+                    expand: true,
+                    cwd: 'src/',
+                    src: ['**/*.js'],
+                    dest: 'dist/' + APP_NAME + '-win32-ia32'
                 }]
             }
         },
@@ -64,19 +102,55 @@ module.exports = function(grunt) {
             }
         },
         clean: {
-            release: ['build/'],
+            build: ['build/'],
+            release: ['dist/']
         },
         ffmpeg_libs: {
             options: {
-                dir: 'bin/ffmpeg',
+                dir: 'bin/ffmpeg/' + process.platform,
                 force: true,
                 arch: (process.platform === 'win32') ? 'ia32' : 'x64',
                 platform: (process.platform === 'win32') ? 'win' : 'osx'
+            }
+        },
+        electron: {
+            windows: {
+                options: {
+                    name: APP_NAME,
+                    dir: 'build/',
+                    out: 'dist',
+                    version: packagejson['optionalDependencies']['electron-prebuilt'],
+                    platform: 'win32',
+                    arch: 'ia32',
+                    prune: true,
+                    asar: true
+                }
+            }
+        },
+        compress: {
+            windows: {
+                options: {
+                    archive: './dist/' + APP_NAME + '-' + APP_VERSION + '-ia32-win32.zip',
+                    mode: 'zip'
+                },
+                files: [{
+                    expand: true,
+                    dot: true,
+                    cwd: './dist/' + APP_NAME + '-win32-ia32',
+                    src: '**/*'
+                }]
             }
         }
     });
 
     grunt.registerTask('default', ['babel', 'copy:dev', 'shell:electron']);
 
-    grunt.registerTask('deps', ['ffmpeg_libs', 'copy:deps']);
+    grunt.registerTask('run', ['babel', 'shell:electron']);
+
+    grunt.registerTask('deps', ['copy:node_modules']);
+
+    if (process.platform === 'win32') {
+        grunt.registerTask('release', ['clean:release', 'electron:windows', 'babel:dist', 'copy:release', 'copy:depsWindows', 'compress:windows']);
+    }
+
 };
