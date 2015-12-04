@@ -110,8 +110,19 @@ class App extends EventEmitter {
                             console.log(err);
                             reject(err);
                         } else {
-                            var dllPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'registerDll.exe')
-                            var child = childProcess.exec(dllPath, function (error, stdout, stderr) {
+                            // var dllPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'registerDll.exe')
+                            // var child = childProcess.exec(dllPath, function (error, stdout, stderr) {
+                            //     console.log('stdout: ' + stdout);
+                            //     console.log('stderr: ' + stderr);
+                            //     if (error !== null) {
+                            //       console.log('exec error: ' + error);
+                            //     }
+                            //     this.detectVirtualAudioDevice(true);
+                            // }.bind(this));
+                            var exePath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'RegSvrEx.exe')
+                            var dllPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audio_sniffer.dll');
+                            console.log(exePath + " /c " + dllPath)
+                            var child = childProcess.exec(exePath + " /c " + dllPath, function (error, stdout, stderr) {
                                 console.log('stdout: ' + stdout);
                                 console.log('stderr: ' + stderr);
                                 if (error !== null) {
