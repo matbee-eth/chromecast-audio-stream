@@ -18,6 +18,7 @@ import {
     DefaultMediaReceiver as castv2DefaultMediaReceiver
 }
 from 'castv2-client';
+
 var wincmd;
 try {
     wincmd = require('node-windows');
@@ -25,7 +26,7 @@ try {
     wincmd = null;
 }
 
-
+const ffmpegPath = path.join(process.cwd(), 'resources/bin/ffmpeg/', process.platform, 'ffmpeg');
 const app = express();
 
 app.get('/', (req, res) => {
@@ -33,7 +34,7 @@ app.get('/', (req, res) => {
     req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
     let command = ffmpeg();
 
-    command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg', 'ffmpeg'));
+    command.setFfmpegPath(ffmpegPath);
     command.input('audio=virtual-audio-capturer')
     command.inputFormat('dshow')
     command.audioCodec("libmp3lame")
@@ -55,7 +56,7 @@ app.get('/', (req, res) => {
 });
 
 class App extends EventEmitter {
-    constructor(props) {
+    constructor() {
         super();
 
         this.port = false;
@@ -66,7 +67,9 @@ class App extends EventEmitter {
     }
 
     init() {
-        this.setupServer().then(this.detectVirtualAudioDevice.bind(this));
+        this.setupServer()
+            .then(this.detectVirtualAudioDevice.bind(this))
+            .catch(console.error);
     }
 
     setupServer() {
@@ -85,7 +88,7 @@ class App extends EventEmitter {
 
     detectVirtualAudioDevice(redetection) {
         let command = ffmpeg("dummy");
-        command.setFfmpegPath(path.join(process.cwd(), 'ffmpeg', 'ffmpeg'));
+        command.setFfmpegPath(ffmpegPath);
         command.inputOptions([
             "-list_devices true",
             "-f dshow",
@@ -201,7 +204,7 @@ class App extends EventEmitter {
     }
 }
 
-let instance = new App;
+let instance = new App();
 instance.searchForDevices();
 
 module.exports = instance;
