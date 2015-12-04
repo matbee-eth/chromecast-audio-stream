@@ -73,7 +73,47 @@ module.exports = function(grunt) {
                 arch: (process.platform === 'win32') ? 'ia32' : 'x64',
                 platform: (process.platform === 'win32') ? 'win' : 'osx'
             }
-        }
+        },
+        electron: {
+            windows: {
+                options: {
+                    name:  "audio-cast",
+                    dir: 'build/',
+                    out: 'dist',
+                    version: packagejson['electron-version'],
+                    platform: 'win32',
+                    arch: 'ia32',
+                    prune: true,
+                    asar: true
+                }
+            },
+            linux: {
+                options: {
+                    name:  "audio-cast",
+                    dir: 'build/',
+                    out: 'dist',
+                    version: packagejson['electron-version'],
+                    platform: 'linux',
+                    arch: process.arch,
+                    asar: true,
+                    prune: true
+                }
+            },
+            osx: {
+                options: {
+                    name: "audio-cast",
+                    dir: 'build/',
+                    out: 'dist',
+                    version: packagejson['electron-version'],
+                    platform: 'darwin',
+                    arch: 'x64',
+                    asar: true,
+                    prune: true,
+                    'app-bundle-id': 'io.ΛLΞXΛNDRIΛ.Librarian',
+                    'app-version': packagejson.version
+                }
+            }
+        },
     });
 
     grunt.registerTask('default', ['babel', 'copy:dev', 'shell:electron']);
