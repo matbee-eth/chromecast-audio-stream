@@ -18,11 +18,11 @@ import {
     DefaultMediaReceiver as castv2DefaultMediaReceiver
 }
 from 'castv2-client';
-
+var wincmd;
 try {
-    const wincmd = require('node-windows');
+    wincmd = require('node-windows');
 } catch (ex) {
-    const wincmd = null;
+    wincmd = null;
 }
 
 
