@@ -1,3 +1,4 @@
+
 import express from 'express';
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
@@ -9,6 +10,8 @@ import async from 'async';
 import util from 'util';
 import getPort from 'get-port';
 import childProcess from 'child_process';
+import applescript from 'applescript';
+
 import {
     EventEmitter
 }
@@ -33,32 +36,174 @@ const app = express();
 app.get('/', (req, res) => {
     console.log("Device requested: /");
     req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
-    let command = ffmpeg();
+    // let command = ffmpeg();
+    var command;
 
-    command.setFfmpegPath(ffmpegPath);
+    if (process.platform == "darwin") {
+        getSoundflowerDevice().then((device) => {
+            // passed
+            setSelectedAudioDeviceOSX(SoundFlowerDevice);
+            var command = getFFmpegCommandOSX(device)
+            let ffstream = command.pipe();
+            ffstream.on('data', res.write.bind(res));
+        }, () => {
+            // rejected
+        })
+    } else {
+        command = getFFmpegCommandWindows();
+        command.setFfmpegPath(ffmpegPath);
+
+        let ffstream = command.pipe();
+        ffstream.on('data', res.write.bind(res));
+    }
+});
+
+var getFFmpegCommandWindows = () => {
+    let command = ffmpeg();
     command.input('audio=virtual-audio-capturer')
     command.inputFormat('dshow')
     command.audioCodec("libmp3lame")
     command.outputFormat("mp3")
+    .on('start', commandLine => {
+        console.log('Spawned Ffmpeg with command: ' + commandLine);
+    })
+    .on('error', (err, one, two) => {
+        console.log('An error occurred: ' + err.message);
+        console.log(two);
+    })
+    .on('end', () => {
+        console.log("end");
+    });
+
+    return command;
+}
+
+var getFFmpegCommandOSX = (soundflowerDevice) => {
+    // ffmpeg -f avfoundation -i "none:{{SoundFlower INDEX}}" out.mp3
+    let command = ffmpeg();
+    command.setFfmpegPath(ffmpegPath);
+    command.input('none:'+soundflowerDevice.index)
+    .inputFormat('avfoundation')
+    .outputFormat("adts")
+    .outputOptions([
+        "-strict -2",
+        "-b:a 192k"
+    ])
+    .on('start', commandLine => {
+        console.log('Spawned Ffmpeg with command: ' + commandLine);
+    })
+    .on('error', (err, one, two) => {
+        console.log('An error occurred: ' + err.message);
+        console.log(two);
+    })
+    .on('end', () => {
+        console.log("end");
+    });
+
+    return command;
+}
+
+var SoundFlowerDevice = "Soundflower (2ch)"
+
+var getFFmpegDevicesOSX = () => {
+    // ffmpeg -f avfoundation -list_devices true -i ""
+    return new Promise((resolve, reject) => {
+        console.log(ffmpegPath);
+        let command = ffmpeg();
+        command.setFfmpegPath(ffmpegPath)
+        command.input("\"\"")
+        command.inputFormat("avfoundation")
+        .inputOptions([
+            "-list_devices true",
+        ])  
         .on('start', commandLine => {
             console.log('Spawned Ffmpeg with command: ' + commandLine);
         })
         .on('error', (err, one, two) => {
-            console.log('An error occurred: ' + err.message);
-            console.log(two);
+            if (err & !two) {
+                return reject();
+            }
+            var mode = null;
+            var data = two.split("\n");
+            var devices = [];
+            for (var i = 0; i < data.length; i++) {
+                var line = data[i];
+                if (line.indexOf("AVFoundation input device @ ") > -1) {
+                    // device
+                    var device = line.substring(line.indexOf("]")+1).trim();
+                    if (device.indexOf("AVFoundation video devices") > -1) {
+                        // Video device list.
+                        mode = "video";
+                    } else if (device.indexOf("AVFoundation audio devices") > -1) {
+                        // audio device list.
+                        mode = "audio";
+                    } else {
+                        devices.push({type: mode, index: device.substring(1,2 ), name: device.substring(device.indexOf("]")+1).trim() });
+                    }
+                }
+            }
+            resolve(devices);
         })
-        .on('end', () => {
-            console.log("end");
-            res.end();
-        })
+        .on('end', (err) => {
+            console.log("DEVICES:", err);
+        });
+        let ffstream = command.pipe();
+    });
+};
 
-    let ffstream = command.pipe();
-    ffstream.on('data', res.write.bind(res));
+var getSoundflowerDevice = () => {
+    return new Promise((resolve, reject) => {
+        getFFmpegDevicesOSX().then((devices) => {
+            for (var i = 0; i < devices.length; i++) {
+                if (devices[i].type == "audio" && devices[i].name == SoundFlowerDevice) {
+                    console.info("Soundflower available!");
+                    return resolve(devices[i]);
+                }
+            }
+            console.info("Soundflower not found!");
+            reject();
+        });
+    });
+}
+
+var getSelectedAudioDeviceOSX = () => {
+    return new Promise((resolve, reject) => {
+        var exePath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audiodevice')
+        var child = childProcess.execFile(exePath, ["output"], {}, function (error, stdout, stderr) {
+            var device = stdout.trim().split("\n").join("");
+            resolve(device);
+        }.bind(this));
+    });
+}
+
+var originalOutputDevice;
+getSelectedAudioDeviceOSX(true).then(function (audiodevice) {
+    console.info("Selected Audio Device:", audiodevice);
+    originalOutputDevice = audiodevice;
 });
 
-var getFFmpegCommandWindows () => {
-
-}
+var setSelectedAudioDeviceOSX = (device) => {
+    if (!device) {
+        device = SoundFlowerDevice;
+    }
+    return new Promise((resolve, reject) => {
+        var exePath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audiodevice')
+        var child = childProcess.execFile(exePath, ["output", SoundFlowerDevice], {}, function (error, stdout, stderr) {
+            getSelectedAudioDeviceOSX().then(function (activeDevice) {
+                console.log(activeDevice, device);
+                if (activeDevice != device) {
+                    // SoundFlower not installed. Probably.
+                    console.error("Soundflower not found!");
+                    reject();
+                } else {
+                    // SoundFlower installed!
+                    console.info("SoundFlower Activated!");
+                    resolve();
+                }
+            });
+        }.bind(this));
+    });
+};
 
 class App extends EventEmitter {
     constructor() {
@@ -92,6 +237,14 @@ class App extends EventEmitter {
     }
 
     detectVirtualAudioDevice(redetection) {
+        if (process.platform == "darwin") {
+            return this.detectVirtualAudioDeviceOSX();
+        } else {
+            return this.detectVirtualAudioDeviceWindows();
+        }
+    }
+
+    detectVirtualAudioDeviceWindows (redetection) {
         let command = ffmpeg("dummy");
         command.setFfmpegPath(ffmpegPath);
         command.inputOptions([
@@ -114,15 +267,6 @@ class App extends EventEmitter {
                             console.log(err);
                             reject(err);
                         } else {
-                            // var dllPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'registerDll.exe')
-                            // var child = childProcess.exec(dllPath, function (error, stdout, stderr) {
-                            //     console.log('stdout: ' + stdout);
-                            //     console.log('stderr: ' + stderr);
-                            //     if (error !== null) {
-                            //       console.log('exec error: ' + error);
-                            //     }
-                            //     this.detectVirtualAudioDevice(true);
-                            // }.bind(this));
                             var exePath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'RegSvrEx.exe')
                             var dllPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audio_sniffer.dll');
                             console.log(exePath + " /c " + dllPath)
@@ -142,11 +286,6 @@ class App extends EventEmitter {
                 })
             let ffstream = command.pipe();
         });
-
-    }
-
-    detectVirtualAudioDeviceWindows (redetection) {
-
     }
 
     detectVirtualAudioDeviceOSX (redetection) {
