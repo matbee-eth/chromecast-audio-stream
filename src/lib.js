@@ -10,7 +10,6 @@ import async from 'async';
 import util from 'util';
 import getPort from 'get-port';
 import childProcess from 'child_process';
-import applescript from 'applescript';
 
 import {
     EventEmitter

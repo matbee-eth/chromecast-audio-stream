@@ -1,6 +1,9 @@
 var electron = require('electron-prebuilt');
 var packagejson = require('./package.json');
-
+var tail = process.platform;
+if (process.platform == 'darwin') {
+    tail += "-x64";
+}
 module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
@@ -32,7 +35,7 @@ module.exports = function(grunt) {
                     expand: true,
                     cwd: 'bin/',
                     src: ['**/*'],
-                    dest: 'dist/' + APP_NAME + '-win32-ia32/resources/bin/'
+                    dest: 'dist/' + APP_NAME + '-'+tail+'/resources/bin/'
                 }]
             },
             node_modules: {
@@ -51,18 +54,18 @@ module.exports = function(grunt) {
                     src: Object.keys(packagejson.dependencies).map(function(dep) {
                         return dep + '/**/*';
                     }),
-                    dest: 'dist/' + APP_NAME + '-win32-ia32/node_modules/',
+                    dest: 'dist/' + APP_NAME + '-'+tail+'/node_modules/',
                     expand: true
                 }, {
                     expand: true,
                     cwd: '.',
                     src: ['package.json'],
-                    dest: 'dist/' + APP_NAME + '-win32-ia32/',
+                    dest: 'dist/' + APP_NAME + '-'+tail+'/',
                 }, {
                     cwd: 'src/',
                     expand: true,
                     src: ['*.png'],
-                    dest: 'dist/' + APP_NAME + '-win32-ia32/',
+                    dest: 'dist/' + APP_NAME + '-'+tail+'/',
                 }]
             }
         },
@@ -86,7 +89,7 @@ module.exports = function(grunt) {
                     expand: true,
                     cwd: 'src/',
                     src: ['**/*.js'],
-                    dest: 'dist/' + APP_NAME + '-win32-ia32'
+                    dest: 'dist/' + APP_NAME + '-'+tail
                 }]
             }
         },
@@ -120,8 +123,8 @@ module.exports = function(grunt) {
                     dir: 'build/',
                     out: 'dist',
                     version: packagejson['optionalDependencies']['electron-prebuilt'],
-                    platform: 'win32',
-                    arch: 'ia32',
+                    platform: process.platform == 'darwin' ? 'darwin' : 'win32',
+                    arch: process.platform == 'darwin' ? 'x64' : 'ia32',
                     prune: true,
                     asar: true
                 }
@@ -130,13 +133,13 @@ module.exports = function(grunt) {
         compress: {
             windows: {
                 options: {
-                    archive: './dist/' + APP_NAME + '-' + APP_VERSION + '-ia32-win32.zip',
+                    archive: './dist/' + APP_NAME + '-' + APP_VERSION + '-'+tail+'.zip',
                     mode: 'zip'
                 },
                 files: [{
                     expand: true,
                     dot: true,
-                    cwd: './dist/' + APP_NAME + '-win32-ia32',
+                    cwd: './dist/' + APP_NAME + '-'+tail,
                     src: '**/*'
                 }]
             }
@@ -149,8 +152,8 @@ module.exports = function(grunt) {
 
     grunt.registerTask('deps', ['copy:node_modules']);
 
-    if (process.platform === 'win32') {
+    // if (process.platform === 'win32') {
         grunt.registerTask('release', ['clean:release', 'electron:windows', 'babel:dist', 'copy:release', 'copy:depsWindows', 'compress:windows']);
-    }
+    // }
 
 };
