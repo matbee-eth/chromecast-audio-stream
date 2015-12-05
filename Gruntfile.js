@@ -3,6 +3,8 @@ var packagejson = require('./package.json');
 var tail = process.platform;
 if (process.platform == 'darwin') {
     tail += "-x64";
+} else {
+    tail += "-ia32"
 }
 module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
