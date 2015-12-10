@@ -125,7 +125,7 @@ module.exports = function(grunt) {
                     dir: 'build/',
                     out: 'dist',
                     version: packagejson['optionalDependencies']['electron-prebuilt'],
-                    platform: process.platform == 'darwin' ? 'darwin' : 'win32',
+                    platform: process.platform,
                     arch: process.platform == 'darwin' ? 'x64' : 'ia32',
                     prune: true,
                     asar: true
