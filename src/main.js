@@ -8,7 +8,20 @@ var lib;
 
 
 var contextMenu = new Menu();
+contextMenu.append(new MenuItem({
+    type: 'separator'
+}));
 
+// contextMenu.append(new MenuItem({
+//     type: 'separator'
+// }));
+contextMenu.append(new MenuItem({
+    type: 'normal',
+    label: 'Close',
+    click: () => {
+        app.quit();
+    }
+}));
 /* Some usefull chrome args */
 app.commandLine.appendSwitch('v', -1);
 app.commandLine.appendSwitch('vmodule', 'console=0');
@@ -27,7 +40,7 @@ app.on('ready', () => {
     })
     lib.on("deviceFound", (host, devicename) => {
         console.log(host, devicename);
-        contextMenu.append(new MenuItem({
+        contextMenu.insert(0, new MenuItem({
             label: devicename,
             type: 'checkbox',
             click: () => {
