@@ -1,8 +1,10 @@
 # chromecast-audio-stream
 Stream your PC's audio to the Chromecast
 
-1) Install Node.js https://nodejs.org/en/download/
+Download release file: https://github.com/acidhax/chromecast-audio-stream/releases/download/0.2.5/audio-cast-1.0.0-win32-ia32.zip
 
-2) execute "npm install" from this projects directory.
+Extract and execute audio-cast.exe.
 
-3) execute "node index.js"
+Right click tray icon and select your cast device.
+
+Enjoy!
