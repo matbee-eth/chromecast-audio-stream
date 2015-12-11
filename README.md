@@ -1,6 +1,7 @@
-# chromecast-audio-stream
-[![Screenshot](https://s3.amazonaws.com/matbee.com/audio-cast.png)](https://s3.amazonaws.com/matbee.com/audio-cast.png)
+# Chromecast Audio Stream
+Capture your system audio and stream everything directly to your Chromecast.
 
+[![Screenshot](https://s3.amazonaws.com/matbee.com/audio-cast.png)](https://s3.amazonaws.com/matbee.com/audio-cast.png)
 
 Stream your PC's audio to the Chromecast
 
