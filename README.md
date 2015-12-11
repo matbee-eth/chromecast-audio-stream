@@ -6,11 +6,12 @@ Capture your system audio and stream everything directly to your Chromecast.
 Stream your PC's audio to the Chromecast
 
 ---
+
 OSX Users!
 
 Use this for OSX support: https://github.com/andresgottlieb/soundcast
----
 
+---
 
 Download release file: https://github.com/acidhax/chromecast-audio-stream/releases/download/0.2.5/audio-cast-1.0.0-win32-ia32.zip
 
