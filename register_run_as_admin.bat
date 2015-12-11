@@ -1,1 +1,0 @@
-regsvr32  %~dp0\audio_sniffer.dll /s
