@@ -1,5 +1,9 @@
 # chromecast-audio-stream
+[![Screenshot](https://s3.amazonaws.com/matbee.com/audio-cast.png)](https://s3.amazonaws.com/matbee.com/audio-cast.png)
+
+
 Stream your PC's audio to the Chromecast
+
 
 Download release file: https://github.com/acidhax/chromecast-audio-stream/releases/download/0.2.5/audio-cast-1.0.0-win32-ia32.zip
 
