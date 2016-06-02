@@ -266,8 +266,8 @@ class App extends EventEmitter {
                             console.log(err);
                             reject(err);
                         } else {
-                            var exePath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'RegSvrEx.exe')
-                            var dllPath = path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audio_sniffer.dll');
+                            var exePath = '"' +path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'RegSvrEx.exe') + '"';
+                            var dllPath = '"' +path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audio_sniffer.dll') + '"';
                             console.log(exePath + " /c " + dllPath)
                             var child = childProcess.exec(exePath + " /c " + dllPath, function (error, stdout, stderr) {
                                 console.log('stdout: ' + stdout);
