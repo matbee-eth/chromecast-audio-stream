@@ -26,6 +26,6 @@ Enjoy!
 
 Dev's
 
-npm install -g grunt-cli (in command-line as administrator)
-npm install
-grunt
+- npm install -g grunt-cli (in command-line as administrator)
+- npm install
+- grunt
