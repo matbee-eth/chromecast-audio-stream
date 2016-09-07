@@ -20,3 +20,12 @@ Extract and execute audio-cast.exe.
 Right click tray icon and select your cast device.
 
 Enjoy!
+
+
+---
+
+Dev's
+
+- npm install -g grunt-cli (in command-line as administrator)
+- npm install
+- grunt
