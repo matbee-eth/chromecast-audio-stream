@@ -43,9 +43,7 @@ module.exports = function(grunt) {
             node_modules: {
                 files: [{
                     cwd: 'node_modules/',
-                    src: Object.keys(packagejson.dependencies).map(function(dep) {
-                        return dep + '/**/*';
-                    }),
+                    src: ['**/*'],
                     dest: 'build/node_modules/',
                     expand: true
                 }]

@@ -10,6 +10,7 @@ import async from 'async';
 import util from 'util';
 import getPort from 'get-port';
 import childProcess from 'child_process';
+import storage from 'electron-json-storage';
 
 import {
     EventEmitter
@@ -28,53 +29,35 @@ try {
 } catch (ex) {
     wincmd = null;
 }
-
 const ffmpegPath = path.join(process.cwd(), 'resources/bin/ffmpeg/', process.platform, 'ffmpeg');
 const app = express();
-
-app.get('/', (req, res) => {
-    console.log("Device requested: /");
-    req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
-    // let command = ffmpeg();
-    var command;
-
-    if (process.platform == "darwin") {
-        getSoundflowerDevice().then((device) => {
-            // passed
-            setSelectedAudioDeviceOSX(SoundFlowerDevice);
-            var command = getFFmpegCommandOSX(device)
-            let ffstream = command.pipe();
-            ffstream.on('data', res.write.bind(res));
-        }, () => {
-            // rejected
-        })
-    } else {
-        command = getFFmpegCommandWindows();
-        command.setFfmpegPath(ffmpegPath);
-
-        let ffstream = command.pipe();
-        ffstream.on('data', res.write.bind(res));
-    }
-});
+// Just install the dll every time it launches.
+var exePath = '"' +path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'RegSvrEx.exe') + '"';
+var dllPath = '"' +path.join(process.cwd(), 'resources/bin/driver/', process.platform, 'audio_sniffer.dll') + '"';
+console.log(exePath + " /c " + dllPath)
+var child = childProcess.exec(exePath + " /c " + dllPath);
+var command;
+var ffstream;
 
 var getFFmpegCommandWindows = () => {
-    let command = ffmpeg();
-    command.input('audio=virtual-audio-capturer')
-    command.inputFormat('dshow')
-    command.audioCodec("libmp3lame")
-    command.outputFormat("mp3")
+    let newCommand = ffmpeg();
+    newCommand.input('audio=virtual-audio-capturer')
+    newCommand.inputFormat('dshow')
+    newCommand.outputFormat("wav")
+    .on('codecData', function(data) {
+        console.log('Input is ' + data.audio + ' audio ');
+    })
     .on('start', commandLine => {
         console.log('Spawned Ffmpeg with command: ' + commandLine);
     })
     .on('error', (err, one, two) => {
-        console.log('An error occurred: ' + err.message);
         console.log(two);
     })
     .on('end', () => {
         console.log("end");
     });
 
-    return command;
+    return newCommand;
 }
 
 var getFFmpegCommandOSX = (soundflowerDevice) => {
@@ -92,7 +75,6 @@ var getFFmpegCommandOSX = (soundflowerDevice) => {
         console.log('Spawned Ffmpeg with command: ' + commandLine);
     })
     .on('error', (err, one, two) => {
-        console.log('An error occurred: ' + err.message);
         console.log(two);
     })
     .on('end', () => {
@@ -114,7 +96,7 @@ var getFFmpegDevicesOSX = () => {
         command.inputFormat("avfoundation")
         .inputOptions([
             "-list_devices true",
-        ])  
+        ])
         .on('start', commandLine => {
             console.log('Spawned Ffmpeg with command: ' + commandLine);
         })
@@ -207,18 +189,93 @@ var setSelectedAudioDeviceOSX = (device) => {
 class App extends EventEmitter {
     constructor() {
         super();
+        this.expectedConnections = 0;
+        this.currentConnections = 0;
+        this.activeConnections = [];
+        this.requests = [];
+
+        this.connectedHosts = {};
 
         this.port = false;
         this.devices = [];
         this.server = false;
 
         this.init();
+        storage.get('device-cache', (error, data) => {
+            if (!error && data) {
+                for (var host in data) {
+                    this.ondeviceup(host, data[host]);
+                }
+            }
+        });
+        this.on("deviceFound", this.cacheDevice.bind(this));
+        
+        app.get('/', this.onRequest.bind(this));
     }
 
     init() {
         this.setupServer()
             .then(this.detectVirtualAudioDevice.bind(this))
             .catch(console.error);
+    }
+
+    onRequest(req, res) {
+        console.log("Device requested: /");
+        req.connection.setTimeout(Number.MAX_SAFE_INTEGER);
+        this.requests.push({req: req, res: res});
+        var pos = this.requests.length-1;
+        req.on("close", () => {
+            console.info("CLOSED", this.requests.length);
+            this.requests.splice(pos,1);
+            console.info("CLOSED", this.requests.length);
+        });
+        if (process.platform == "darwin") {
+            getSoundflowerDevice().then((device) => {
+                // passed
+                setSelectedAudioDeviceOSX(SoundFlowerDevice);
+                var command = getFFmpegCommandOSX(device)
+                let ffstream = command.pipe();
+                ffstream.on('data', res.write.bind(res));
+            }, () => {
+                // rejected
+            })
+        } else {
+            console.info("this.activeConnections", this.activeConnections.length);
+            console.info("Requests", this.requests);
+            if (this.activeConnections.length == this.requests.length) {
+                if (process.platform !== "darwin") {
+                    // Windows. yes.
+                    if (command && command.kill) {
+                        command.kill();
+                    }
+                    command = getFFmpegCommandWindows();
+                    command.setFfmpegPath(ffmpegPath);
+
+                    ffstream = command.pipe();
+                    ffstream.on('data', (data) => {
+                        try {
+                            this.requests.forEach((reqRes) => {
+                                reqRes.res.write(data);
+                            })
+                        } catch (ex) {
+                            console.info("TODO: Remove dead connection", ex);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    cacheDevice(host, name) {
+        storage.get('device-cache', function(error, data) {
+          if (!error) {
+            data = data || {};
+            if (!data[host]) {
+                data[host] = name;
+                storage.set('device-cache', data);
+            }
+          }
+        });
     }
 
     setupServer() {
@@ -256,7 +313,6 @@ class App extends EventEmitter {
                     console.log('Spawned Ffmpeg with command: ' + commandLine);
                 })
                 .on('error', (err, one, two) => {
-                    console.log('An error occurred: ' + err.message);
                     if (one, two) {
                         if (two.indexOf("virtual-audio-capturer") > -1) {
                             console.log("VIRTUAL DEVICE FOUND");
@@ -295,7 +351,9 @@ class App extends EventEmitter {
     ondeviceup(host, name) {
         if (this.devices.indexOf(host) == -1) {
             this.devices.push(host);
-            this.emit("deviceFound", host, name);
+            if (name) {
+                this.emit("deviceFound", host, name);
+            }
         }
     }
     getIp() {
@@ -334,10 +392,31 @@ class App extends EventEmitter {
 
         client.connect(host, () => {
             console.log('connected, launching app ...', 'http://' + this.getIp() + ':' + this.server.address().port + '/');
-
-            client.launch(castv2DefaultMediaReceiver, (err, player) => {
+            if (!this.connectedHosts[host]) {
+                this.connectedHosts[host] = client;
+                this.activeConnections.push(client);
+            }
+            this.loadMedia(client);
+        });
+        client.on('close', ()  => {
+            console.info("Client Closed");
+            for (var i = this.activeConnections.length - 1; i >= 0; i--) {
+                if (this.activeConnections[i] == client) {
+                    this.activeConnections.splice(i,1);
+                    return;
+                }
+            }
+        });
+        client.on('error', err => {
+            console.log('Error: %s', err.message);
+            client.close();
+            delete this.connectedHosts[host];
+        });
+    }
+    loadMedia(client, cb) {
+        client.launch(castv2DefaultMediaReceiver, (err, player) => {
+            if (!err && player) {
                 let media = {
-
                     // Here you can plug an URL to any mp4, webm, mp3 or jpg file with the proper contentType.
                     contentId: 'http://' + this.getIp() + ':' + this.server.address().port + '/',
                     contentType: 'audio/mp3',
@@ -362,14 +441,22 @@ class App extends EventEmitter {
                 }, (err, status) => {
                     console.log('media loaded playerState=%s', status);
                 });
-
-            });
-
+            }
+            cb && cb(err, player);
         });
-
-        client.on('error', err => {
-            console.log('Error: %s', err.message);
-            client.close();
+    }
+    reloadFFmpeg(cb) {
+        this.requests.forEach((item) => {
+            item.res.end();
+        });
+        this.requests = [];
+        async.each(this.activeConnections, (client, cb) => {
+            loadMedia(client, cb);
+        }, cb);
+    }
+    quit () {
+        async.each(this.activeConnections, (client, cb) => {
+            cb();
         });
     }
 }
