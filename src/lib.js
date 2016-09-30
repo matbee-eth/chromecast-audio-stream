@@ -242,27 +242,27 @@ class App extends EventEmitter {
         } else {
             console.info("this.activeConnections", this.activeConnections.length);
             console.info("Requests", this.requests);
-            if (this.activeConnections.length == this.requests.length) {
+            // if (this.activeConnections.length == this.requests.length) {
                 if (process.platform !== "darwin") {
                     // Windows. yes.
-                    if (command && command.kill) {
-                        command.kill();
-                    }
-                    command = getFFmpegCommandWindows();
+                    // if (command && command.kill) {
+                    //     command.kill();
+                    // }
+                    let command = getFFmpegCommandWindows();
                     command.setFfmpegPath(ffmpegPath);
 
                     ffstream = command.pipe();
                     ffstream.on('data', (data) => {
                         try {
-                            this.requests.forEach((reqRes) => {
-                                reqRes.res.write(data);
-                            })
+                            // this.requests.forEach((reqRes) => {
+                                res.write(data);
+                            // })
                         } catch (ex) {
                             console.info("TODO: Remove dead connection", ex);
                         }
                     });
                 }
-            }
+            // }
         }
     }
 
