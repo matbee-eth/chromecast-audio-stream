@@ -7,7 +7,8 @@ Stream your PC's audio to the Chromecast
 
 ----
 # Bug fix:
-If the app doesn't stream audio, try running "register_run_as_admin.bat" in resources\bin\driver
+
+If the app doesn't stream audio, try running "register_run_as_admin.bat" in resources\bin\driver as administrator.
 ----
 ---
 
