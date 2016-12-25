@@ -36,7 +36,7 @@ contextMenu.append(new MenuItem({
 //     })
 // );
 
-/* Some usefull chrome args */
+/* Some useful chrome args */
 app.commandLine.appendSwitch('v', -1);
 app.commandLine.appendSwitch('vmodule', 'console=0');
 app.commandLine.appendSwitch('disable-speech-api');
