@@ -22,7 +22,10 @@
     "fluent-ffmpeg": "^2.0.1",
     "get-port": "^2.1.0",
     "mdns-js": "^0.4.0",
-    "node-windows": "^0.1.10"
+    "node-windows": "^0.1.10",
+    "node-ssdp-lite": "^0.2.0",
+    "xml2js": "^0.4.17",
+    "request": "^2.79.0"
   },
   "devDependencies": {
     "babel": "^6.1.18",
