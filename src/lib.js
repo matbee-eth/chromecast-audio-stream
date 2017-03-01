@@ -4,6 +4,7 @@ import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
 import Promise from 'bluebird';
 import mdns from 'mdns-js';
+import ssdp from 'node-ssdp-lite';
 import os from 'os';
 import net from 'net';
 import async from 'async';
@@ -386,6 +387,17 @@ class App extends EventEmitter {
                 this.ondeviceup(service.addresses[0], service.fullname.substring(0, service.fullname.indexOf("._googlecast")));
             }
         });
+		
+		// also do a SSDP/UPnP search
+		let ssdpBrowser = new ssdp();
+		ssdpBrowser.on('response', (msg, rinfo) => {
+			var location = this.getLocation(msg);
+			if (location != null) {
+				this.getServiceDescription(location, rinfo.address);
+			}
+		});
+
+		ssdpBrowser.search('urn:dial-multiscreen-org:device:dial:1');
     }
     stream(host) {
         let client = new castv2Client();
@@ -454,6 +466,33 @@ class App extends EventEmitter {
             loadMedia(client, cb);
         }, cb);
     }
+	getLocation(msg) {
+		msg.replace('\r', '');
+		var headers = msg.split('\n');
+		var location = null;
+		for (var i = 0; i < headers.length; i++) {
+			if (headers[i].indexOf('LOCATION') == 0)
+				location = headers[i].replace('LOCATION:', '').trim();
+		}
+		return location;
+	}
+	parseServiceDescription(body, address) {
+		var parseString = require('xml2js').parseString;
+		parseString(body, (err, result) => {
+			if (!err && result && result.root && result.root.device) {
+				var device = result.root.device[0];
+				this.ondeviceup(address, device.friendlyName.toString());
+			}
+		});
+	}
+	getServiceDescription(url, address) {
+		var request = require('request');
+		request.get(url, (error, response, body) => {
+			if (!error && response.statusCode == 200) {
+				this.parseServiceDescription(body, address);
+			}
+		});
+	}
     quit () {
         async.each(this.activeConnections, (client, cb) => {
             cb();
