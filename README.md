@@ -8,7 +8,8 @@ Stream your PC's audio to the Chromecast
 ----
 # Bug fix:
 
-If the app doesn't stream audio, move it to the Desktop. Else, try running "register_run_as_admin.bat" in resources\bin\driver as administrator. 
+If the app doesn't stream audio, move it to the Desktop. Else, try running "register_run_as_admin.bat" in resources\bin\driver as administrator.
+This program requires [Microsoft Visual C++ 2010 Redistributable Package](https://www.microsoft.com/en-us/download/details.aspx?id=5555). If you are on Windows 10, you will have to install this.
 ----
 ---
 
