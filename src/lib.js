@@ -200,6 +200,7 @@ class App extends EventEmitter {
         this.port = false;
         this.devices = [];
         this.server = false;
+        this.volumeShortcutsEnabled = false;
 
         this.init();
         storage.get('device-cache', (error, data) => {
@@ -401,6 +402,9 @@ class App extends EventEmitter {
     }
     stream(host) {
         let client = new castv2Client();
+        client.volume = 0;
+        client.stepInterval = 0.5;
+        client.muted = false;
 
         client.connect(host, () => {
             console.log('connected, launching app ...', 'http://' + this.getIp() + ':' + this.server.address().port + '/');
@@ -453,6 +457,15 @@ class App extends EventEmitter {
                 }, (err, status) => {
                     console.log('media loaded playerState=%s', status);
                 });
+
+                client.getStatus((x, status) => {
+                    if (status && status.volume)
+                    {
+                        client.volume = status.volume.level;
+                        client.muted = status.volume.muted;
+                        client.stepInterval = status.volume.stepInterval;
+                    }
+                })
             }
             cb && cb(err, player);
         });
@@ -493,6 +506,42 @@ class App extends EventEmitter {
 			}
 		});
 	}
+    setVolume() {
+        if (this.volumeShortcutsEnabled) {
+            async.each(this.activeConnections, (client) => {
+                client.setVolume({ level: client.volume }, function (data, volume) { });
+            });
+        }
+    }
+    volumeUp() {
+        if (this.volumeShortcutsEnabled) {
+            async.each(this.activeConnections, (client) => {
+                client.volume += client.stepInterval;
+                if (client.volume > 1) client.volume = 1;
+                this.setVolume();
+            });
+        }
+    }
+    volumeDown() {
+        if (this.volumeShortcutsEnabled) {
+            async.each(this.activeConnections, (client) => {
+                client.volume -= client.stepInterval;
+                if (client.volume < 0) client.volume = 0;
+                this.setVolume();
+            });
+        }
+    }
+    volumeMute() {
+        if (this.volumeShortcutsEnabled) {
+            async.each(this.activeConnections, (client) => {
+                client.muted = !client.muted;
+                client.setVolume({ muted: client.muted }, function (data, volume) { });
+            });
+        }
+    }
+    volumeEnableShortCuts() {
+        this.volumeShortcutsEnabled = !this.volumeShortcutsEnabled;
+    }
     quit () {
         async.each(this.activeConnections, (client, cb) => {
             cb();
