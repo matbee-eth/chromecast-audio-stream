@@ -13,6 +13,10 @@ Use this for OSX support: https://github.com/andresgottlieb/soundcast
 
 ---
 
+## Supported Alternatives
+https://github.com/SamDel/ChromeCast-Desktop-Audio-Streamer
+http://github.com/elibroftw/music-caster/
+
 ## Installation instructions
 
 Download release file: https://github.com/acidhax/chromecast-audio-stream/releases/download/0.3/audio-cast-win32-ia32.zip
