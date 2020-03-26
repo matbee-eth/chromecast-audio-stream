@@ -368,7 +368,7 @@ class App extends EventEmitter {
                     if (!/(loopback|vmware|internal|hamachi|vboxnet|virtualbox)/gi.test(dev + (alias ? ':' + alias : ''))) {
                         if (details.address.substring(0, 8) === '192.168.' ||
                             details.address.substring(0, 7) === '172.16.' ||
-                            details.address.substring(0, 5) === '10.0.'
+                            details.address.substring(0, 3) === '10.'
                         ) {
                             ip = details.address;
                             ++alias;
